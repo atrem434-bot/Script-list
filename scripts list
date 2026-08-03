@@ -1,0 +1,68 @@
+local scripts = {
+    {name = "Лера скрипт", url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/запуск"},
+}
+
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "ScriptMenu"
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0.5, -150, 0.5, -200) -- центр
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.Text = "скрипты бессмертного"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 18
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -30, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 18
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.Parent = frame
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- Контейнер для кнопок скриптов
+local list = Instance.new("Frame")
+list.Size = UDim2.new(1, -10, 1, -40)
+list.Position = UDim2.new(0, 5, 0, 35)
+list.BackgroundTransparency = 1
+list.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = list
+
+for i, data in ipairs(scripts) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 250, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.Text = data.name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 16
+    btn.Font = Enum.Font.SourceSans
+    btn.Parent = list
+
+    btn.MouseButton1Click:Connect(function()
+        pcall(function()
+            loadstring(game:HttpGet(data.url))()
+        end)
+    end)
+end
