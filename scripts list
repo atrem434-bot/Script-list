@@ -1,6 +1,5 @@
 local scripts = {
-    {name = "Лера скрипт", url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/запуск"},
-{name = "aim bot", url = "loadstring(game:HttpGet("https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"))()"},
+    {name = "Лера скрипт", url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/запуск"},{name = "aim bot", url = "loadstring(game:HttpGet("https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"))()"},
 }
 
 local player = game.Players.LocalPlayer
