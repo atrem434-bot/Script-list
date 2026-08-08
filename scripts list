@@ -7,6 +7,10 @@ local scripts = {
         name = "aim bot",
         url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"
     },
+    {
+        name = "cheat menu",
+        url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/cheat%20menu"
+    },
 }
 
 local player = game.Players.LocalPlayer
