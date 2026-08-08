@@ -1,21 +1,30 @@
 local scripts = {
-    {name = "Лера скрипт", url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/запуск"},{name = "aim bot", url = "loadstring(game:HttpGet("https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"))()"},
+    {
+        name = "Лера скрипт",
+        url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/запуск"
+    },
+    {
+        name = "aim bot",
+        url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"
+    },
 }
 
 local player = game.Players.LocalPlayer
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "ScriptMenu"
+gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 400)
-frame.Position = UDim2.new(0.5, -150, 0.5, -200) -- центр
+frame.Position = UDim2.new(0.5, -150, 0.5, -200)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
+title.Size = UDim2.new(1, -30, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 title.Text = "скрипты бессмертного"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -31,7 +40,9 @@ closeBtn.Text = "✕"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.TextSize = 18
 closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.BorderSizePixel = 0
 closeBtn.Parent = frame
+
 closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
@@ -57,11 +68,32 @@ for i, data in ipairs(scripts) do
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.TextSize = 16
     btn.Font = Enum.Font.SourceSans
+    btn.BorderSizePixel = 0
+    btn.LayoutOrder = i
     btn.Parent = list
 
     btn.MouseButton1Click:Connect(function()
-        pcall(function()
-            loadstring(game:HttpGet(data.url))()
+        local success, err = pcall(function()
+            local code = game:HttpGet(data.url)
+            local func, compileError = loadstring(code)
+
+            if not func then
+                error(compileError)
+            end
+
+            func()
         end)
+
+        if not success then
+            warn("Ошибка: " .. tostring(err))
+        end
+    end)
+
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    end)
+
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     end)
 end
