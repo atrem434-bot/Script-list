@@ -14,6 +14,64 @@ local scripts = {
 }
 
 local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local accent = Color3.fromRGB(120, 90, 255)
+local redAccent = Color3.fromRGB(255, 90, 90)
+local greenAccent = Color3.fromRGB(80, 220, 100)
+
+local function styleButton(btn, btnAccent)
+	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+	btn.TextColor3 = Color3.fromRGB(230, 230, 230)
+	btn.Font = Enum.Font.GothamMedium
+	btn.TextSize = 14
+	btn.AutoButtonColor = false
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = btn
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = btnAccent or accent
+	stroke.Thickness = 1
+	stroke.Transparency = 0.5
+	stroke.Parent = btn
+
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+	end)
+end
+
+local function makeDraggable(dragHandle, target)
+	local dragging = false
+	local dragStart
+	local startPos
+
+	dragHandle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = target.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	dragHandle.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+end
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "ScriptMenu"
@@ -21,83 +79,221 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 400)
-frame.Position = UDim2.new(0.5, -150, 0.5, -200)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
+frame.Size = UDim2.new(0, 280, 0, 420)
+frame.Position = UDim2.new(0, 20, 0, 20)
+frame.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
 frame.Parent = gui
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -30, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-title.Text = "скрипты бессмертного"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 18
-title.Font = Enum.Font.SourceSansBold
-title.Parent = frame
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
 
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -30, 0, 0)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 18
-closeBtn.Font = Enum.Font.SourceSansBold
-closeBtn.BorderSizePixel = 0
-closeBtn.Parent = frame
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = accent
+frameStroke.Thickness = 1.5
+frameStroke.Transparency = 0.4
+frameStroke.Parent = frame
 
-closeBtn.MouseButton1Click:Connect(function()
-    gui:Destroy()
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 34)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
+titleBar.Active = true
+titleBar.Parent = frame
+
+local titleBarCorner = Instance.new("UICorner")
+titleBarCorner.CornerRadius = UDim.new(0, 12)
+titleBarCorner.Parent = titleBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 12, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "СКРИПТЫ"
+titleLabel.TextColor3 = Color3.fromRGB(210, 200, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 14
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 26, 0, 26)
+closeButton.Position = UDim2.new(1, -32, 0, 4)
+closeButton.Text = "X"
+closeButton.Parent = titleBar
+styleButton(closeButton, redAccent)
+
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 26, 0, 26)
+minimizeButton.Position = UDim2.new(1, -62, 0, 4)
+minimizeButton.Text = "-"
+minimizeButton.Parent = titleBar
+styleButton(minimizeButton, accent)
+
+makeDraggable(titleBar, frame)
+
+local body = Instance.new("Frame")
+body.Size = UDim2.new(1, 0, 1, -34)
+body.Position = UDim2.new(0, 0, 0, 34)
+body.BackgroundTransparency = 1
+body.Parent = frame
+
+local originalSize = frame.Size
+local minimizedSize = UDim2.new(0, 280, 0, 34)
+local isMinimized = false
+
+minimizeButton.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	body.Visible = not isMinimized
+	frame.Size = isMinimized and minimizedSize or originalSize
 end)
 
-local list = Instance.new("Frame")
-list.Size = UDim2.new(1, -10, 1, -40)
-list.Position = UDim2.new(0, 5, 0, 35)
-list.BackgroundTransparency = 1
-list.Parent = frame
+closeButton.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
 
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 5)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.VerticalAlignment = Enum.VerticalAlignment.Top
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = list
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -20, 1, -20)
+content.Position = UDim2.new(0, 10, 0, 10)
+content.BackgroundTransparency = 1
+content.Parent = body
+
+local subLabel = Instance.new("TextLabel")
+subLabel.Size = UDim2.new(1, 0, 0, 22)
+subLabel.Position = UDim2.new(0, 0, 0, 0)
+subLabel.BackgroundTransparency = 1
+subLabel.Text = "Выбери скрипт для загрузки:"
+subLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
+subLabel.Font = Enum.Font.GothamMedium
+subLabel.TextSize = 12
+subLabel.TextXAlignment = Enum.TextXAlignment.Left
+subLabel.Parent = content
+
+local list = Instance.new("ScrollingFrame")
+list.Size = UDim2.new(1, 0, 1, -50)
+list.Position = UDim2.new(0, 0, 0, 28)
+list.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+list.BorderSizePixel = 0
+list.ScrollBarThickness = 4
+list.ScrollBarImageColor3 = accent
+list.CanvasSize = UDim2.new(0, 0, 0, 0)
+list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+list.Parent = content
+
+local listCorner = Instance.new("UICorner")
+listCorner.CornerRadius = UDim.new(0, 8)
+listCorner.Parent = list
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 6)
+listLayout.Parent = list
+
+local listPadding = Instance.new("UIPadding")
+listPadding.PaddingTop = UDim.new(0, 6)
+listPadding.PaddingLeft = UDim.new(0, 6)
+listPadding.PaddingRight = UDim.new(0, 6)
+listPadding.PaddingBottom = UDim.new(0, 6)
+listPadding.Parent = list
+
+local creatorLabel = Instance.new("TextLabel")
+creatorLabel.Size = UDim2.new(1, 0, 0, 18)
+creatorLabel.Position = UDim2.new(0, 0, 1, -18)
+creatorLabel.BackgroundTransparency = 1
+creatorLabel.Text = "creator @RIP_TOPPOP"
+creatorLabel.TextColor3 = Color3.fromRGB(100, 100, 140)
+creatorLabel.Font = Enum.Font.Gotham
+creatorLabel.TextSize = 10
+creatorLabel.TextXAlignment = Enum.TextXAlignment.Center
+creatorLabel.Parent = content
 
 for i, data in ipairs(scripts) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 250, 0, 35)
-    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    btn.Text = data.name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 16
-    btn.Font = Enum.Font.SourceSans
-    btn.BorderSizePixel = 0
-    btn.LayoutOrder = i
-    btn.Parent = list
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -12, 0, 38)
+	btn.LayoutOrder = i
+	btn.Text = data.name
+	btn.TextColor3 = Color3.fromRGB(230, 230, 230)
+	btn.Font = Enum.Font.GothamMedium
+	btn.TextSize = 13
+	btn.AutoButtonColor = false
+	btn.Parent = list
 
-    btn.MouseButton1Click:Connect(function()
-        local success, err = pcall(function()
-            local code = game:HttpGet(data.url)
-            local func, compileError = loadstring(code)
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 8)
+	btnCorner.Parent = btn
 
-            if not func then
-                error(compileError)
-            end
+	local btnStroke = Instance.new("UIStroke")
+	btnStroke.Color = accent
+	btnStroke.Thickness = 1
+	btnStroke.Transparency = 0.5
+	btnStroke.Parent = btn
 
-            func()
-        end)
+	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 
-        if not success then
-            warn("Ошибка: " .. tostring(err))
-        end
-    end)
+	local icon = Instance.new("TextLabel")
+	icon.Size = UDim2.new(0, 30, 1, 0)
+	icon.Position = UDim2.new(0, 8, 0, 0)
+	icon.BackgroundTransparency = 1
+	icon.Text = "▶"
+	icon.TextColor3 = accent
+	icon.Font = Enum.Font.Gotham
+	icon.TextSize = 16
+	icon.TextXAlignment = Enum.TextXAlignment.Center
+	icon.Parent = btn
 
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    end)
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+	end)
 
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+	end)
+
+	btn.MouseButton1Click:Connect(function()
+		btn.Text = "⏳ Загрузка..."
+		btn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+		local stroke = btn:FindFirstChildOfClass("UIStroke")
+		if stroke then stroke.Color = Color3.fromRGB(255, 200, 50) end
+
+		task.spawn(function()
+			local success, err = pcall(function()
+				local code = game:HttpGet(data.url)
+				local func, compileError = loadstring(code)
+
+				if not func then
+					error(compileError)
+				end
+
+				func()
+			end)
+
+			if success then
+				btn.Text = "✅ Загружено!"
+				btn.BackgroundColor3 = Color3.fromRGB(0, 80, 40)
+				local stroke = btn:FindFirstChildOfClass("UIStroke")
+				if stroke then stroke.Color = greenAccent end
+
+				task.wait(1.5)
+
+				btn.Text = data.name
+				btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+				local stroke = btn:FindFirstChildOfClass("UIStroke")
+				if stroke then stroke.Color = accent end
+			else
+				btn.Text = "❌ Ошибка"
+				btn.BackgroundColor3 = Color3.fromRGB(80, 30, 30)
+				local stroke = btn:FindFirstChildOfClass("UIStroke")
+				if stroke then stroke.Color = redAccent end
+
+				task.wait(2)
+
+				btn.Text = data.name
+				btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+				local stroke = btn:FindFirstChildOfClass("UIStroke")
+				if stroke then stroke.Color = accent end
+
+				warn("Ошибка: " .. tostring(err))
+			end
+		end)
+	end)
 end
