@@ -4,16 +4,8 @@ local scripts = {
         url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA"
     },
     {
-        name = "aim bot",
-        url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/aim%20bot"
-    },
-    {
         name = "cheat menu",
         url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/cheat%20menu"
-    },
-    {
-        name = "aim bot NPC",
-        url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/npc_aim"
     },
 }
 
