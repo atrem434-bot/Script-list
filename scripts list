@@ -4,292 +4,537 @@ local scripts = {
         url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA"
     },
     {
-        name = "cheat menu",
+        name = "Cheat all games",
         url = "https://github.com/atrem434-bot/Lera-scripts/raw/refs/heads/main/cheat%20menu"
     },
 }
 
-local player = game.Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-local accent = Color3.fromRGB(120, 90, 255)
-local redAccent = Color3.fromRGB(255, 90, 90)
-local greenAccent = Color3.fromRGB(80, 220, 100)
-
-local function styleButton(btn, btnAccent)
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-	btn.TextColor3 = Color3.fromRGB(230, 230, 230)
-	btn.Font = Enum.Font.GothamMedium
-	btn.TextSize = 14
-	btn.AutoButtonColor = false
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
-	corner.Parent = btn
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = btnAccent or accent
-	stroke.Thickness = 1
-	stroke.Transparency = 0.5
-	stroke.Parent = btn
-
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
-	end)
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-	end)
+local player = Players.LocalPlayer
+if not player then
+    repeat task.wait() player = Players.LocalPlayer until player
 end
 
-local function makeDraggable(dragHandle, target)
-	local dragging = false
-	local dragStart
-	local startPos
+local playerGui = player:FindFirstChildOfClass("PlayerGui") or player:WaitForChild("PlayerGui", 15)
+if not playerGui then return end
 
-	dragHandle.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = target.Position
+local old = playerGui:FindFirstChild("RedControl_Loader")
+if old then old:Destroy() end
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
+local C = {
+    bg = Color3.fromRGB(9,9,12),
+    panel = Color3.fromRGB(16,16,21),
+    panel2 = Color3.fromRGB(22,22,28),
+    button = Color3.fromRGB(29,29,36),
+    hover = Color3.fromRGB(43,43,52),
+    text = Color3.fromRGB(245,245,247),
+    muted = Color3.fromRGB(155,155,165),
+    red = Color3.fromRGB(215,30,42),
+    redBright = Color3.fromRGB(255,65,78),
+    redDark = Color3.fromRGB(95,17,24),
+    green = Color3.fromRGB(42,185,88),
+    yellow = Color3.fromRGB(235,180,45),
+}
 
-	dragHandle.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - dragStart
-			target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
+local function corner(o,r)
+    local x=Instance.new("UICorner")
+    x.CornerRadius=UDim.new(0,r or 9)
+    x.Parent=o
+    return x
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "ScriptMenu"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local function stroke(o,c,t,tr)
+    local x=Instance.new("UIStroke")
+    x.Color=c
+    x.Thickness=t or 1
+    x.Transparency=tr or 0
+    x.Parent=o
+    return x
+end
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 420)
-frame.Position = UDim2.new(0, 20, 0, 20)
-frame.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
-frame.Parent = gui
+local function styleButton(b)
+    b.AutoButtonColor=false
+    b.BackgroundColor3=C.button
+    b.TextColor3=C.text
+    b.Font=Enum.Font.GothamMedium
+    b.TextSize=13
+    corner(b,8)
+    local s=stroke(b,C.red,1,.7)
 
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
-frameCorner.Parent = frame
+    b.MouseEnter:Connect(function()
+        TweenService:Create(b,TweenInfo.new(.12),{BackgroundColor3=C.hover}):Play()
+        TweenService:Create(s,TweenInfo.new(.12),{Transparency=.15}):Play()
+    end)
 
-local frameStroke = Instance.new("UIStroke")
-frameStroke.Color = accent
-frameStroke.Thickness = 1.5
-frameStroke.Transparency = 0.4
-frameStroke.Parent = frame
+    b.MouseLeave:Connect(function()
+        if b.Parent then
+            TweenService:Create(b,TweenInfo.new(.12),{BackgroundColor3=C.button}):Play()
+            TweenService:Create(s,TweenInfo.new(.12),{Transparency=.7}):Play()
+        end
+    end)
+    return s
+end
 
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 34)
-titleBar.Position = UDim2.new(0, 0, 0, 0)
-titleBar.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
-titleBar.Active = true
-titleBar.Parent = frame
+local gui=Instance.new("ScreenGui")
+gui.Name="RedControl_Loader"
+gui.ResetOnSpawn=false
+gui.IgnoreGuiInset=true
+gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.Parent=playerGui
 
-local titleBarCorner = Instance.new("UICorner")
-titleBarCorner.CornerRadius = UDim.new(0, 12)
-titleBarCorner.Parent = titleBar
+local main=Instance.new("Frame")
+main.Size=UDim2.fromOffset(500,350)
+main.Position=UDim2.new(.5,-250,.5,-175)
+main.BackgroundColor3=C.bg
+main.BorderSizePixel=0
+main.Parent=gui
+corner(main,14)
+stroke(main,C.red,1.5,.3)
 
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -100, 1, 0)
-titleLabel.Position = UDim2.new(0, 12, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "СКРИПТЫ"
-titleLabel.TextColor3 = Color3.fromRGB(210, 200, 255)
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 14
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = titleBar
+local top=Instance.new("Frame")
+top.Size=UDim2.new(1,0,0,54)
+top.BackgroundColor3=C.panel
+top.BorderSizePixel=0
+top.Active=true
+top.Parent=main
+corner(top,14)
 
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 26, 0, 26)
-closeButton.Position = UDim2.new(1, -32, 0, 4)
-closeButton.Text = "X"
-closeButton.Parent = titleBar
-styleButton(closeButton, redAccent)
+local title=Instance.new("TextLabel")
+title.BackgroundTransparency=1
+title.Position=UDim2.fromOffset(15,7)
+title.Size=UDim2.new(1,-120,0,22)
+title.Text="RED CONTROL"
+title.TextColor3=C.text
+title.Font=Enum.Font.GothamBold
+title.TextSize=17
+title.TextXAlignment=Enum.TextXAlignment.Left
+title.Parent=top
 
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 26, 0, 26)
-minimizeButton.Position = UDim2.new(1, -62, 0, 4)
-minimizeButton.Text = "-"
-minimizeButton.Parent = titleBar
-styleButton(minimizeButton, accent)
+local subtitle=Instance.new("TextLabel")
+subtitle.BackgroundTransparency=1
+subtitle.Position=UDim2.fromOffset(15,29)
+subtitle.Size=UDim2.new(1,-120,0,16)
+subtitle.Text="SCRIPT LOADER  •  @RIP_TOPPOP"
+subtitle.TextColor3=C.muted
+subtitle.Font=Enum.Font.GothamMedium
+subtitle.TextSize=9
+subtitle.TextXAlignment=Enum.TextXAlignment.Left
+subtitle.Parent=top
 
-makeDraggable(titleBar, frame)
+local minimize=Instance.new("TextButton")
+minimize.Size=UDim2.fromOffset(32,32)
+minimize.Position=UDim2.new(1,-76,0,11)
+minimize.Text="−"
+minimize.TextSize=20
+minimize.Parent=top
+styleButton(minimize)
 
-local body = Instance.new("Frame")
-body.Size = UDim2.new(1, 0, 1, -34)
-body.Position = UDim2.new(0, 0, 0, 34)
-body.BackgroundTransparency = 1
-body.Parent = frame
+local close=Instance.new("TextButton")
+close.Size=UDim2.fromOffset(32,32)
+close.Position=UDim2.new(1,-38,0,11)
+close.Text="×"
+close.TextSize=20
+close.Parent=top
+local closeStroke=styleButton(close)
+closeStroke.Color=C.redBright
 
-local originalSize = frame.Size
-local minimizedSize = UDim2.new(0, 280, 0, 34)
-local isMinimized = false
+local mini=Instance.new("TextButton")
+mini.Size=UDim2.fromOffset(52,52)
+mini.BackgroundColor3=C.panel
+mini.Text="R"
+mini.TextColor3=C.redBright
+mini.Font=Enum.Font.GothamBold
+mini.TextSize=19
+mini.Visible=false
+mini.Active=true
+mini.Parent=gui
+corner(mini,12)
+stroke(mini,C.red,1.5,.2)
 
-minimizeButton.MouseButton1Click:Connect(function()
-	isMinimized = not isMinimized
-	body.Visible = not isMinimized
-	frame.Size = isMinimized and minimizedSize or originalSize
+local function draggable(handle,target)
+    local dragging=false
+    local start
+    local startPos
+
+    handle.Active=true
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType==Enum.UserInputType.MouseButton1
+            or input.UserInputType==Enum.UserInputType.Touch then
+            dragging=true
+            start=input.Position
+            startPos=target.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState==Enum.UserInputState.End then
+                    dragging=false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType~=Enum.UserInputType.MouseMovement
+            and input.UserInputType~=Enum.UserInputType.Touch then return end
+
+        local d=input.Position-start
+        target.Position=UDim2.new(
+            startPos.X.Scale,startPos.X.Offset+d.X,
+            startPos.Y.Scale,startPos.Y.Offset+d.Y
+        )
+    end)
+end
+
+draggable(top,main)
+draggable(mini,mini)
+
+local minimized=false
+
+minimize.MouseButton1Click:Connect(function()
+    if minimized then return end
+    minimized=true
+    mini.Position=main.Position
+    main.Visible=false
+    mini.Visible=true
 end)
 
-closeButton.MouseButton1Click:Connect(function()
-	gui:Destroy()
+mini.MouseButton1Click:Connect(function()
+    if not minimized then return end
+    minimized=false
+    main.Position=mini.Position
+    main.Visible=true
+    mini.Visible=false
 end)
 
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -20, 1, -20)
-content.Position = UDim2.new(0, 10, 0, 10)
-content.BackgroundTransparency = 1
-content.Parent = body
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
 
-local subLabel = Instance.new("TextLabel")
-subLabel.Size = UDim2.new(1, 0, 0, 22)
-subLabel.Position = UDim2.new(0, 0, 0, 0)
-subLabel.BackgroundTransparency = 1
-subLabel.Text = "Выбери скрипт для загрузки:"
-subLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
-subLabel.Font = Enum.Font.GothamMedium
-subLabel.TextSize = 12
-subLabel.TextXAlignment = Enum.TextXAlignment.Left
-subLabel.Parent = content
+local nav=Instance.new("Frame")
+nav.Size=UDim2.new(0,145,1,-66)
+nav.Position=UDim2.fromOffset(8,62)
+nav.BackgroundColor3=C.panel
+nav.BorderSizePixel=0
+nav.Parent=main
+corner(nav,10)
 
-local list = Instance.new("ScrollingFrame")
-list.Size = UDim2.new(1, 0, 1, -50)
-list.Position = UDim2.new(0, 0, 0, 28)
-list.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-list.BorderSizePixel = 0
-list.ScrollBarThickness = 4
-list.ScrollBarImageColor3 = accent
-list.CanvasSize = UDim2.new(0, 0, 0, 0)
-list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-list.Parent = content
+local navPad=Instance.new("UIPadding")
+navPad.PaddingTop=UDim.new(0,8)
+navPad.PaddingLeft=UDim.new(0,7)
+navPad.PaddingRight=UDim.new(0,7)
+navPad.Parent=nav
 
-local listCorner = Instance.new("UICorner")
-listCorner.CornerRadius = UDim.new(0, 8)
-listCorner.Parent = list
+local navLayout=Instance.new("UIListLayout")
+navLayout.Padding=UDim.new(0,5)
+navLayout.Parent=nav
 
-local listLayout = Instance.new("UIListLayout")
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout.Padding = UDim.new(0, 6)
-listLayout.Parent = list
+local content=Instance.new("Frame")
+content.Size=UDim2.new(1,-161,1,-66)
+content.Position=UDim2.fromOffset(153,62)
+content.BackgroundColor3=C.panel
+content.BorderSizePixel=0
+content.Parent=main
+corner(content,10)
 
-local listPadding = Instance.new("UIPadding")
-listPadding.PaddingTop = UDim.new(0, 6)
-listPadding.PaddingLeft = UDim.new(0, 6)
-listPadding.PaddingRight = UDim.new(0, 6)
-listPadding.PaddingBottom = UDim.new(0, 6)
-listPadding.Parent = list
+local contentPad=Instance.new("UIPadding")
+contentPad.PaddingTop=UDim.new(0,10)
+contentPad.PaddingBottom=UDim.new(0,10)
+contentPad.PaddingLeft=UDim.new(0,12)
+contentPad.PaddingRight=UDim.new(0,12)
+contentPad.Parent=content
 
-local creatorLabel = Instance.new("TextLabel")
-creatorLabel.Size = UDim2.new(1, 0, 0, 18)
-creatorLabel.Position = UDim2.new(0, 0, 1, -18)
-creatorLabel.BackgroundTransparency = 1
-creatorLabel.Text = "creator @RIP_TOPPOP"
-creatorLabel.TextColor3 = Color3.fromRGB(100, 100, 140)
-creatorLabel.Font = Enum.Font.Gotham
-creatorLabel.TextSize = 10
-creatorLabel.TextXAlignment = Enum.TextXAlignment.Center
-creatorLabel.Parent = content
+local categories={{"Scripts","▶"},{"Info","●"},{"Settings","⚙"}}
+local panels={}
+local navButtons={}
 
-for i, data in ipairs(scripts) do
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -12, 0, 38)
-	btn.LayoutOrder = i
-	btn.Text = data.name
-	btn.TextColor3 = Color3.fromRGB(230, 230, 230)
-	btn.Font = Enum.Font.GothamMedium
-	btn.TextSize = 13
-	btn.AutoButtonColor = false
-	btn.Parent = list
+local function makePanel(id)
+    local p=Instance.new("ScrollingFrame")
+    p.Name=id
+    p.Size=UDim2.new(1,0,1,0)
+    p.BackgroundTransparency=1
+    p.BorderSizePixel=0
+    p.ScrollBarThickness=4
+    p.ScrollBarImageColor3=C.red
+    p.AutomaticCanvasSize=Enum.AutomaticSize.Y
+    p.CanvasSize=UDim2.new()
+    p.Visible=false
+    p.Parent=content
 
-	local btnCorner = Instance.new("UICorner")
-	btnCorner.CornerRadius = UDim.new(0, 8)
-	btnCorner.Parent = btn
+    local l=Instance.new("UIListLayout")
+    l.Padding=UDim.new(0,7)
+    l.Parent=p
 
-	local btnStroke = Instance.new("UIStroke")
-	btnStroke.Color = accent
-	btnStroke.Thickness = 1
-	btnStroke.Transparency = 0.5
-	btnStroke.Parent = btn
-
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-
-	local icon = Instance.new("TextLabel")
-	icon.Size = UDim2.new(0, 30, 1, 0)
-	icon.Position = UDim2.new(0, 8, 0, 0)
-	icon.BackgroundTransparency = 1
-	icon.Text = "▶"
-	icon.TextColor3 = accent
-	icon.Font = Enum.Font.Gotham
-	icon.TextSize = 16
-	icon.TextXAlignment = Enum.TextXAlignment.Center
-	icon.Parent = btn
-
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
-	end)
-
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-	end)
-
-	btn.MouseButton1Click:Connect(function()
-		btn.Text = "⏳ Загрузка..."
-		btn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
-		local stroke = btn:FindFirstChildOfClass("UIStroke")
-		if stroke then stroke.Color = Color3.fromRGB(255, 200, 50) end
-
-		task.spawn(function()
-			local success, err = pcall(function()
-				local code = game:HttpGet(data.url)
-				local func, compileError = loadstring(code)
-
-				if not func then
-					error(compileError)
-				end
-
-				func()
-			end)
-
-			if success then
-				btn.Text = "✅ Загружено!"
-				btn.BackgroundColor3 = Color3.fromRGB(0, 80, 40)
-				local stroke = btn:FindFirstChildOfClass("UIStroke")
-				if stroke then stroke.Color = greenAccent end
-
-				task.wait(1.5)
-
-				btn.Text = data.name
-				btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-				local stroke = btn:FindFirstChildOfClass("UIStroke")
-				if stroke then stroke.Color = accent end
-			else
-				btn.Text = "❌ Ошибка"
-				btn.BackgroundColor3 = Color3.fromRGB(80, 30, 30)
-				local stroke = btn:FindFirstChildOfClass("UIStroke")
-				if stroke then stroke.Color = redAccent end
-
-				task.wait(2)
-
-				btn.Text = data.name
-				btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-				local stroke = btn:FindFirstChildOfClass("UIStroke")
-				if stroke then stroke.Color = accent end
-
-				warn("Ошибка: " .. tostring(err))
-			end
-		end)
-	end)
+    panels[id]=p
+    return p
 end
+
+local function navButton(id,icon,order)
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,0,0,37)
+    b.LayoutOrder=order
+    b.Text=icon.."  "..id
+    b.TextXAlignment=Enum.TextXAlignment.Left
+    b.Parent=nav
+
+    local s=styleButton(b)
+    navButtons[id]={b=b,s=s}
+
+    b.MouseButton1Click:Connect(function()
+        for name,p in pairs(panels) do
+            p.Visible=(name==id)
+        end
+
+        for name,d in pairs(navButtons) do
+            local active=name==id
+            d.b.BackgroundColor3=active and C.redDark or C.button
+            d.s.Color=active and C.redBright or C.red
+            d.s.Transparency=active and .05 or .7
+        end
+    end)
+end
+
+for i,c in ipairs(categories) do
+    makePanel(c[1])
+    navButton(c[1],c[2],i)
+end
+
+local function header(parent,t,d)
+    local f=Instance.new("Frame")
+    f.Size=UDim2.new(1,0,0,54)
+    f.BackgroundColor3=C.panel2
+    f.Parent=parent
+    corner(f,8)
+    stroke(f,C.red,1,.75)
+
+    local h=Instance.new("TextLabel")
+    h.BackgroundTransparency=1
+    h.Position=UDim2.fromOffset(12,7)
+    h.Size=UDim2.new(1,-24,0,21)
+    h.Text=t
+    h.TextColor3=C.text
+    h.Font=Enum.Font.GothamBold
+    h.TextSize=16
+    h.TextXAlignment=Enum.TextXAlignment.Left
+    h.Parent=f
+
+    local x=Instance.new("TextLabel")
+    x.BackgroundTransparency=1
+    x.Position=UDim2.fromOffset(12,29)
+    x.Size=UDim2.new(1,-24,0,16)
+    x.Text=d
+    x.TextColor3=C.muted
+    x.Font=Enum.Font.GothamMedium
+    x.TextSize=10
+    x.TextXAlignment=Enum.TextXAlignment.Left
+    x.Parent=f
+end
+
+local function section(parent,t)
+    local l=Instance.new("TextLabel")
+    l.Size=UDim2.new(1,0,0,18)
+    l.BackgroundTransparency=1
+    l.Text=t:upper()
+    l.TextColor3=C.redBright
+    l.Font=Enum.Font.GothamBold
+    l.TextSize=9
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    l.Parent=parent
+end
+
+local function label(parent,t)
+    local l=Instance.new("TextLabel")
+    l.Size=UDim2.new(1,0,0,22)
+    l.BackgroundTransparency=1
+    l.Text=t
+    l.TextColor3=C.muted
+    l.Font=Enum.Font.GothamMedium
+    l.TextSize=11
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    l.Parent=parent
+    return l
+end
+
+local function scriptButton(parent,data,order)
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,0,0,52)
+    b.LayoutOrder=order
+    b.Text=""
+    b.Parent=parent
+
+    local s=styleButton(b)
+
+    local icon=Instance.new("TextLabel")
+    icon.Size=UDim2.fromOffset(38,52)
+    icon.Position=UDim2.fromOffset(4,0)
+    icon.BackgroundTransparency=1
+    icon.Text="▶"
+    icon.TextColor3=C.redBright
+    icon.Font=Enum.Font.GothamBold
+    icon.TextSize=16
+    icon.Parent=b
+
+    local name=Instance.new("TextLabel")
+    name.BackgroundTransparency=1
+    name.Position=UDim2.fromOffset(43,6)
+    name.Size=UDim2.new(1,-55,0,20)
+    name.Text=data.name
+    name.TextColor3=C.text
+    name.Font=Enum.Font.GothamBold
+    name.TextSize=13
+    name.TextXAlignment=Enum.TextXAlignment.Left
+    name.Parent=b
+
+    local status=Instance.new("TextLabel")
+    status.BackgroundTransparency=1
+    status.Position=UDim2.fromOffset(43,27)
+    status.Size=UDim2.new(1,-55,0,16)
+    status.Text="Нажми для запуска"
+    status.TextColor3=C.muted
+    status.Font=Enum.Font.GothamMedium
+    status.TextSize=9
+    status.TextXAlignment=Enum.TextXAlignment.Left
+    status.Parent=b
+
+    b.MouseButton1Click:Connect(function()
+        b.Active=false
+        b.BackgroundColor3=Color3.fromRGB(35,30,22)
+        s.Color=C.yellow
+        icon.Text="⏳"
+        status.Text="Загрузка скрипта..."
+        status.TextColor3=C.yellow
+
+        task.spawn(function()
+            local ok,err=pcall(function()
+                local code=game:HttpGet(data.url)
+                local func,compileError=loadstring(code)
+                if not func then error(compileError) end
+                func()
+            end)
+
+            if ok then
+                icon.Text="✓"
+                status.Text="Скрипт успешно запущен"
+                status.TextColor3=C.green
+                b.BackgroundColor3=Color3.fromRGB(18,45,27)
+                s.Color=C.green
+
+                task.wait(1.5)
+
+                if b.Parent then
+                    icon.Text="▶"
+                    status.Text="Нажми для запуска"
+                    status.TextColor3=C.muted
+                    b.BackgroundColor3=C.button
+                    s.Color=C.red
+                    b.Active=true
+                end
+            else
+                icon.Text="!"
+                status.Text="Ошибка загрузки"
+                status.TextColor3=C.redBright
+                b.BackgroundColor3=Color3.fromRGB(55,22,27)
+                s.Color=C.redBright
+
+                warn("[RedControl Loader] "..tostring(err))
+                task.wait(2)
+
+                if b.Parent then
+                    icon.Text="▶"
+                    status.Text="Нажми для повторной попытки"
+                    status.TextColor3=C.muted
+                    b.BackgroundColor3=C.button
+                    s.Color=C.red
+                    b.Active=true
+                end
+            end
+        end)
+    end)
+end
+
+do
+    local p=panels.Scripts
+    header(p,"Scripts","Выбери скрипт для загрузки")
+    section(p,"Available scripts")
+
+    for i,data in ipairs(scripts) do
+        scriptButton(p,data,i)
+    end
+
+    section(p,"Status")
+    label(p,"Готов к запуску")
+end
+
+do
+    local p=panels.Info
+    header(p,"Information","RedControl Script Loader")
+    section(p,"Loader")
+    label(p,"Загрузчик получает Lua-код по указанной ссылке.")
+    label(p,"После загрузки код компилируется и запускается.")
+    section(p,"Creator")
+    local creator=label(p,"@RIP_TOPPOP")
+    creator.TextColor3=C.redBright
+    section(p,"Scripts")
+    label(p,"Количество доступных скриптов: "..#scripts)
+end
+
+do
+    local p=panels.Settings
+    header(p,"Settings","Настройки интерфейса")
+    section(p,"Interface")
+
+    local reset=Instance.new("TextButton")
+    reset.Size=UDim2.new(1,0,0,38)
+    reset.Text="Reset UI Position"
+    reset.Parent=p
+    styleButton(reset)
+    reset.MouseButton1Click:Connect(function()
+        main.Position=UDim2.new(.5,-250,.5,-175)
+    end)
+
+    local min=Instance.new("TextButton")
+    min.Size=UDim2.new(1,0,0,38)
+    min.Text="Minimize UI"
+    min.Parent=p
+    styleButton(min)
+    min.MouseButton1Click:Connect(function()
+        minimize:Activate()
+    end)
+
+    local closeSetting=Instance.new("TextButton")
+    closeSetting.Size=UDim2.new(1,0,0,38)
+    closeSetting.Text="Close UI"
+    closeSetting.Parent=p
+    local cs=styleButton(closeSetting)
+    cs.Color=C.redBright
+    closeSetting.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+end
+
+panels.Scripts.Visible=true
+navButtons.Scripts.b.BackgroundColor3=C.redDark
+navButtons.Scripts.s.Color=C.redBright
+navButtons.Scripts.s.Transparency=.05
+
+local uiScale=Instance.new("UIScale")
+uiScale.Parent=main
+
+local function updateScale()
+    local cam=workspace.CurrentCamera
+    if not cam then return end
+    local vp=cam.ViewportSize
+    local factor=math.min(vp.X/560,vp.Y/410)
+    uiScale.Scale=math.clamp(factor,.62,1)
+end
+
+updateScale()
+
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
+end
+
+print("RedControl Script Loader loaded")
